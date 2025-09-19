@@ -14,7 +14,7 @@ class ConfigSetCommand extends Command
 
     protected function configure()
     {
-        $this->setDescription('Set global config key (ex: GEMINI_API_KEY=xxxx)')
+        $this->setDescription('Set global config key (ex: GEMINI_MODEL=gemini-2.5-flash)')
             ->addArgument('pair', InputArgument::REQUIRED, 'KEY=VALUE');
     }
 
@@ -22,7 +22,7 @@ class ConfigSetCommand extends Command
     {
         $pair = $input->getArgument('pair');
         if (strpos($pair, '=') === false) {
-            $output->writeln('<error>Formato inválido. Use: iartisan config:set GEMINI_API_KEY=xxxx</error>');
+            $output->writeln('<error>Invalid format. Use: iartisan config:set GEMINI_MODEL=gemini-2.5-flash</error>');
             return Command::FAILURE;
         }
 
@@ -31,7 +31,7 @@ class ConfigSetCommand extends Command
         $value = trim($value);
 
         $map = [
-            'GEMINI_API_KEY' => 'gemini_api_key'
+            'GEMINI_MODEL' => 'gemini_model'
         ];
 
         $internal = $map[$key] ?? strtolower($key);
@@ -39,7 +39,7 @@ class ConfigSetCommand extends Command
         $cfg = new ConfigManager();
         $cfg->set($internal, $value);
 
-        $output->writeln("<info>Salvo: {$key}</info>");
+        $output->writeln("<info>Saved: {$key}</info>");
         return Command::SUCCESS;
     }
 }

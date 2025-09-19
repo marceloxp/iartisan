@@ -15,10 +15,9 @@ $app->add(new ConfigSetCommand());
 $app->add(new ConfigClearCommand());
 $app->add(new AskCommand());
 
-
-// dispatch simples:
-// if first arg is 'config:set' ou outros comandos do Symfony -> roda normalmente
-// caso contrário, junta tudo e passa como "prompt" pro AskCommand
+// Dispatch logic:
+// If first arg is 'config:set' or other Symfony commands -> run normally
+// Otherwise, join all args and pass as prompt to AskCommand
 $args = $argv;
 array_shift($args);
 
@@ -35,7 +34,7 @@ if ($first === 'config:set' || $first === 'help' || strpos($first, '--') === 0) 
 
 $prompt = implode(' ', $args);
 
-// roda o comando 'ask' internamente
+// Run the 'ask' command internally
 $command = $app->find('ask');
 $input = new ArrayInput(['prompt' => $prompt]);
 $output = new ConsoleOutput();

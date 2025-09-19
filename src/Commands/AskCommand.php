@@ -2,10 +2,10 @@
 
 namespace Marceloxp\Iartisan\Commands;
 
-use Marceloxp\Iartisan\Config\ConfigManager;
 use Marceloxp\Iartisan\Services\GeminiClient;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
@@ -18,25 +18,20 @@ class AskCommand extends Command
     protected function configure()
     {
         $this->setDescription('Ask IArtisan for an artisan command (used internally)')
-            ->addArgument('prompt', InputArgument::REQUIRED, 'Natural language prompt');
+            ->addArgument('prompt', InputArgument::REQUIRED, 'Natural language prompt')
+            ->addOption('filament', 'f', InputOption::VALUE_OPTIONAL, 'Filament version (3 or 4)', null);
     }
 
     private function getGeminiApiKey(): ?string
     {
-        // 1 - Variável de ambiente oficial
+        // 1 - Official environment variable
         if ($key = getenv('GEMINI_API_KEY')) {
             return $key;
         }
 
-        // 2 - Variável de ambiente alternativa
+        // 2 - Alternative environment variable
         if ($key = getenv('IARTISAN_GEMINI_KEY')) {
             return $key;
-        }
-
-        // 3 - Config local (~/.iartisan/config.json)
-        $config = new ConfigManager();
-        if ($config->has('GEMINI_API_KEY')) {
-            return $config->get('GEMINI_API_KEY');
         }
 
         return null;
@@ -45,43 +40,47 @@ class AskCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $projectRoot = getcwd();
-
         $prompt = $input->getArgument('prompt');
+        $filamentVersion = $input->getOption('filament');
 
         $apiKey = $this->getGeminiApiKey();
 
         if (!$apiKey) {
-            $output->writeln('<error>Chave de API não encontrada.</error>');
-            $output->writeln('Use "export GEMINI_API_KEY=xxxx" no terminal ou "iartisan config:set GEMINI_API_KEY=xxxx".');
+            $output->writeln('<error>API key not found.</error>');
+            $output->writeln('Set it using "export GEMINI_API_KEY=xxxx" in your terminal.');
             return Command::FAILURE;
         }
 
         $client = new GeminiClient($apiKey);
 
         try {
-            $command = $client->generate($prompt);
+            $command = $client->generate($prompt, $filamentVersion);
         } catch (\Throwable $e) {
-            $output->writeln('<error>Erro ao acessar Gemini: ' . $e->getMessage() . '</error>');
+            $output->writeln('<error>Error accessing Gemini: ' . $e->getMessage() . '</error>');
             return Command::FAILURE;
         }
 
-        $output->writeln('');
-        $output->writeln('<info>Comando: </info>');
-        $output->writeln($command);
+        // Join multi-line commands into a single line
+        $command = implode(' ', array_filter(array_map('trim', explode("\n", $command))));
 
-        // Verifica se é um projeto Laravel (arquivo artisan presente)
+        // Enhanced visual feedback
+        $output->writeln('');
+        $output->writeln('<fg=cyan;options=bold>Generated Command:</>');
+        $output->writeln('<fg=green>' . $command . '</>');
+
+        // Check if it's a Laravel project (artisan file exists)
         if (file_exists($projectRoot . '/artisan')) {
-            $output->writeln('');
-            if (!str_starts_with($command, 'php artisan')) {
-                $output->writeln('<error>Comando inválido: apenas comandos "php artisan" são permitidos.</error>');
+            // Sanitize command: ensure it starts with 'php artisan'
+            if (!str_starts_with(strtolower($command), 'php artisan')) {
+                $output->writeln('<error>Invalid command: only "php artisan" commands are allowed.</error>');
                 return Command::FAILURE;
             }
 
             $helper = $this->getHelper('question');
-            $question = new ConfirmationQuestion('Executar? [yes] ', false, '/^(y|yes)/i');
+            $question = new ConfirmationQuestion('Execute command? [yes] ', false, '/^(y|yes)/i');
 
             if ($helper->ask($input, $output, $question)) {
-                $output->writeln('<comment>Executando...</comment>');
+                $output->writeln('<comment>Executing...</comment>');
                 $process = Process::fromShellCommandline($command);
                 $process->setTimeout(3600);
                 $process->run(function ($type, $buffer) use ($output) {
@@ -90,7 +89,7 @@ class AskCommand extends Command
 
                 $exit = $process->getExitCode();
                 $output->writeln('');
-                $output->writeln('<info>Comando finalizado com código: ' . $exit . '</info>');
+                $output->writeln('<info>Command finished with exit code: ' . $exit . '</info>');
                 return $exit === 0 ? Command::SUCCESS : Command::FAILURE;
             }
         }

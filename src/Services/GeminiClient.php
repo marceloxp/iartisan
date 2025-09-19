@@ -3,6 +3,7 @@
 namespace Marceloxp\Iartisan\Services;
 
 use GuzzleHttp\Client;
+use Marceloxp\Iartisan\Config\ConfigManager;
 
 class GeminiClient
 {
@@ -12,22 +13,28 @@ class GeminiClient
 
     const URL_TEMPLATE = 'https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent';
 
-    public function __construct(string $apiKey, string $model = 'gemini-2.5-flash')
+    public function __construct(string $apiKey)
     {
         $this->apiKey = $apiKey;
-        $this->model = $model;
+        $config = new ConfigManager();
+        $this->model = $config->get('gemini_model', 'gemini-2.5-flash');
         $this->client = new Client(['timeout' => 30.0]);
     }
 
-    public function generate(string $prompt): string
+    public function generate(string $prompt, ?string $filamentVersion = null): string
     {
         $url = sprintf(self::URL_TEMPLATE, $this->model);
+
+        $systemInstruction = 'You are a PHP Laravel 12 expert. The only subject is Laravel artisan commands. Please answer with only the requested command to help the programmer run it in their terminal.';
+        if ($filamentVersion === '3' || $filamentVersion === '4') {
+            $systemInstruction = "You are a PHP Laravel 12 and Filament {$filamentVersion} expert. The only subject is Laravel artisan commands, including those related to Filament {$filamentVersion}. Please answer with only the requested command to help the programmer run it in their terminal.";
+        }
 
         $payload = [
             "system_instruction" => [
                 "parts" => [
                     [
-                        "text" => "You are a PHP Laravel 12 expert. The only subject is Laravel artisan commands. Please answer with only the requested command to help the programmer run it in their terminal."
+                        "text" => $systemInstruction
                     ]
                 ]
             ],
@@ -58,37 +65,37 @@ class GeminiClient
         $body = (string) $response->getBody();
         $data = json_decode($body, true);
 
-        // tenta extrair o texto padrão (vários caminhos possíveis)
+        // Try to extract the text (multiple possible paths)
         $text = $this->extractText($data) ?? $body;
 
-        // se a resposta for um JSON string como {"command":"..."}
+        // If response is a JSON string like {"command":"..."}
         $maybe = json_decode($text, true);
         if (is_array($maybe) && isset($maybe['command'])) {
             return trim($maybe['command']);
         }
 
-        // procura por "php artisan ..." na resposta
+        // Look for "php artisan ..." in the response
         if (preg_match('/php artisan[^\r\n]*/i', $text, $m)) {
             return trim($m[0]);
         }
 
-        // fallback: primeira linha não vazia
+        // Fallback: first non-empty line
         $lines = preg_split("/\r\n|\n|\r/", $text);
         foreach ($lines as $line) {
             $line = trim($line);
             if ($line === '') continue;
-            $line = preg_replace('/^Comando:\s*/i', '', $line);
+            $line = preg_replace('/^Command:\s*/i', '', $line);
             $line = trim($line, "` \t");
             return $line;
         }
 
-        throw new \RuntimeException('Não foi possível extrair comando da resposta do Gemini.');
+        throw new \RuntimeException('Could not extract command from Gemini response.');
     }
 
     protected function extractText($data)
     {
         if (!is_array($data)) return null;
-        // tentativas em caminhos comuns
+        // Try common paths
         $candidates = [
             ['candidates', 0, 'content', 0, 'text'],
             ['output', 0, 'content', 0, 'text'],
@@ -108,7 +115,7 @@ class GeminiClient
             if (is_string($v) && $v !== '') return $v;
         }
 
-        // busca recursiva por chave 'text'
+        // Recursive search for 'text' key
         return $this->findFirstKey($data, 'text');
     }
 

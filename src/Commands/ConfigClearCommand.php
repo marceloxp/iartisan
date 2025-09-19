@@ -15,8 +15,8 @@ class ConfigClearCommand extends Command
     protected function configure(): void
     {
         $this
-            ->setDescription('Remove uma configuração salva')
-            ->addArgument('key', InputArgument::REQUIRED, 'Nome da chave a remover');
+            ->setDescription('Remove a saved configuration')
+            ->addArgument('key', InputArgument::REQUIRED, 'Name of the key to remove');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -26,9 +26,9 @@ class ConfigClearCommand extends Command
 
         if ($config->has($key)) {
             $config->remove($key);
-            $output->writeln("<info>Removido: {$key}</info>");
+            $output->writeln("<info>Removed: {$key}</info>");
         } else {
-            $output->writeln("<comment>Chave {$key} não encontrada.</comment>");
+            $output->writeln("<comment>Key {$key} not found.</comment>");
         }
 
         return Command::SUCCESS;
