@@ -1,0 +1,27 @@
+{
+    "name": "marceloxp/iartisan",
+    "description": "IArtisan — sugere comandos php artisan usando Google Gemini",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Marceloxp",
+            "email": "you@example.com"
+        }
+    ],
+    "require": {
+        "php": "^8.1",
+        "symfony/console": "^6.4",
+        "guzzlehttp/guzzle": "^7.5",
+        "symfony/process": "^6.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "Marceloxp\\Iartisan\\": "src/"
+        }
+    },
+    "bin": [
+        "bin/iartisan"
+    ],
+    "minimum-stability": "stable"
+}
