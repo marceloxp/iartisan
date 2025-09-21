@@ -15,6 +15,7 @@ class ConfigClearCommand extends Command
     protected function configure(): void
     {
         $this
+            ->setName('config:clear')
             ->setDescription('Remove a saved configuration')
             ->addArgument('key', InputArgument::REQUIRED, 'Name of the key to remove');
     }

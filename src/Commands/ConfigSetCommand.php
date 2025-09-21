@@ -12,13 +12,15 @@ class ConfigSetCommand extends Command
 {
     protected static $defaultName = 'config:set';
 
-    protected function configure()
+    protected function configure(): void
     {
-        $this->setDescription('Set global config key (ex: GEMINI_MODEL=gemini-2.5-flash)')
+        $this
+            ->setName('config:set')
+            ->setDescription('Set global config key (ex: GEMINI_MODEL=gemini-2.5-flash)')
             ->addArgument('pair', InputArgument::REQUIRED, 'KEY=VALUE');
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $pair = $input->getArgument('pair');
         if (strpos($pair, '=') === false) {

@@ -12,9 +12,9 @@
     ],
     "require": {
         "php": "^8.1",
-        "symfony/console": "^6.4",
+        "symfony/console": "^6.4 || ^7.0",
         "guzzlehttp/guzzle": "^7.5",
-        "symfony/process": "^6.4",
+        "symfony/process": "^6.4 || ^7.0",
         "ulrichsg/getopt-php": "^4.0"
     },
     "autoload": {

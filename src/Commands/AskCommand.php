@@ -15,9 +15,11 @@ class AskCommand extends Command
 {
     protected static $defaultName = 'ask';
 
-    protected function configure()
+    protected function configure(): void
     {
-        $this->setDescription('Ask IArtisan for an artisan command (used internally)')
+        $this
+            ->setName('ask')
+            ->setDescription('Ask IArtisan for an artisan command (used internally)')
             ->addArgument('prompt', InputArgument::REQUIRED, 'Natural language prompt')
             ->addOption('filament', 'f', InputOption::VALUE_OPTIONAL, 'Filament version (3 or 4)', null)
             ->addOption('filament3', null, InputOption::VALUE_NONE, 'Use Filament version 3')
@@ -39,7 +41,7 @@ class AskCommand extends Command
         return null;
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $projectRoot = getcwd();
         $prompt = $input->getArgument('prompt');
