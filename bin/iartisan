@@ -1,6 +1,22 @@
 #!/usr/bin/env php
 <?php
-require __DIR__ . '/../vendor/autoload.php';
+// Tenta carregar o autoloader global do Composer ou local
+$autoloadPaths = [
+    __DIR__ . '/../vendor/autoload.php', // Local (dentro do projeto)
+    __DIR__ . '/../../../autoload.php', // Global (~/.config/composer/vendor/autoload.php)
+];
+
+foreach ($autoloadPaths as $autoload) {
+    if (file_exists($autoload)) {
+        require $autoload;
+        break;
+    }
+}
+
+if (!class_exists('Symfony\Component\Console\Application')) {
+    fwrite(STDERR, "Error: Composer autoloader not found. Run 'composer install' or 'composer global require marceloxp/iartisan'.\n");
+    exit(1);
+}
 
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Input\ArgvInput;

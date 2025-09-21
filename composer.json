@@ -3,7 +3,7 @@
     "description": "IArtisan — Craft Artisan commands with AI-powered ease",
     "type": "library",
     "license": "MIT",
-    "version": "0.1.1",
+    "version": "0.1.2",
     "authors": [
         {
             "name": "Marcelo XP",
