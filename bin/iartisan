@@ -3,39 +3,97 @@
 require __DIR__ . '/../vendor/autoload.php';
 
 use Symfony\Component\Console\Application;
+use Symfony\Component\Console\Input\ArgvInput;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Marceloxp\Iartisan\Commands\ConfigSetCommand;
-use Marceloxp\Iartisan\Commands\AskCommand;
 use Marceloxp\Iartisan\Commands\ConfigClearCommand;
+use Marceloxp\Iartisan\Commands\AskCommand;
+use GetOpt\GetOpt;
+use GetOpt\Option;
 
 $app = new Application('IArtisan', '0.1.0');
+$app->setAutoExit(false);
+$app->setCatchExceptions(true);
 
+// Remove opções globais extras do Symfony (quiet, verbose, ansi, etc.)
+$app->getDefinition()->setOptions([]);
+
+// Adiciona apenas os comandos que queremos expor
 $app->add(new ConfigSetCommand());
 $app->add(new ConfigClearCommand());
-$app->add(new AskCommand());
 
-// Dispatch logic:
-// If first arg is 'config:set' or other Symfony commands -> run normally
-// Otherwise, join all args and pass as prompt to AskCommand
-$args = $argv;
-array_shift($args);
+// Comando interno "ask" fica oculto
+$ask = new AskCommand();
+$ask->setHidden(true);
+$app->add($ask);
 
-if (count($args) === 0) {
-    $app->run();
+// --- Processamento de argumentos ---
+array_shift($argv); // remove nome do script
+
+$getopt = new GetOpt();
+$getopt->addOptions([
+    Option::create(null, 'filament3', GetOpt::NO_ARGUMENT),
+    Option::create(null, 'filament4', GetOpt::NO_ARGUMENT),
+    Option::create(null, 'filament', GetOpt::REQUIRED_ARGUMENT),
+    Option::create('h', 'help', GetOpt::NO_ARGUMENT),
+    Option::create(null, 'version', GetOpt::NO_ARGUMENT),
+]);
+
+try {
+    $getopt->process($argv);
+} catch (\Exception $e) {
+    echo "Error: " . $e->getMessage() . "\n";
+    exit(1);
+}
+
+// Help simplificado
+if ($getopt->getOption('help') || $getopt->getOption('h')) {
+    echo "IArtisan 0.1.0\n\n";
+    echo "Usage:\n";
+    echo "  iartisan [--filament3|--filament4|--filament=x] <prompt>\n";
+    echo "  iartisan config:set KEY=VALUE\n";
+    echo "  iartisan config:clear KEY\n\n";
+    echo "Examples:\n";
+    echo "  iartisan --filament4 make a filament page for dashboard\n";
+    echo "  iartisan config:set GEMINI_MODEL=gemini-2.5-flash\n";
+    exit(0);
+}
+
+// Versão
+if ($getopt->getOption('version')) {
+    echo "IArtisan 0.1.0\n";
+    exit(0);
+}
+
+// Detecta versão do Filament
+$filament = null;
+if ($getopt->getOption('filament3')) {
+    $filament = '3';
+} elseif ($getopt->getOption('filament4')) {
+    $filament = '4';
+} elseif ($v = $getopt->getOption('filament')) {
+    $filament = $v;
+}
+
+// Operands = o "resto" (prompt e/ou subcomando)
+$operands = $getopt->getOperands();
+$knownCommands = ['config:set', 'config:clear'];
+
+// Se for comando explícito → deixa o Symfony tratar
+if (count($operands) > 0 && in_array($operands[0], $knownCommands, true)) {
+    $input = new ArgvInput(array_merge([$argv[0] ?? 'iartisan'], $argv));
+    $app->run($input);
     exit;
 }
 
-$first = $args[0];
-if ($first === 'config:set' || $first === 'help' || strpos($first, '--') === 0) {
-    $app->run();
-    exit;
-}
+// Senão → trata como prompt
+$prompt = implode(' ', $operands);
 
-$prompt = implode(' ', $args);
-
-// Run the 'ask' command internally
 $command = $app->find('ask');
-$input = new ArrayInput(['prompt' => $prompt]);
+$commandInput = new ArrayInput([
+    'prompt' => $prompt ?: null,
+    '--filament' => $filament,
+]);
 $output = new ConsoleOutput();
-$command->run($input, $output);
+$command->run($commandInput, $output);

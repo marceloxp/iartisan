@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b433efb19623dde20aa7e369bbdd9903",
+    "content-hash": "ebaafd9d5f6265b41a465d8092e61cf5",
     "packages": [
         {
             "name": "guzzlehttp/guzzle",
@@ -1326,6 +1326,57 @@
                 }
             ],
             "time": "2025-08-25T06:35:40+00:00"
+        },
+        {
+            "name": "ulrichsg/getopt-php",
+            "version": "v4.0.4",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/getopt-php/getopt-php.git",
+                "reference": "9313ecde04f7bed262716e3a4d32a5e2cea3ffad"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/getopt-php/getopt-php/zipball/9313ecde04f7bed262716e3a4d32a5e2cea3ffad",
+                "reference": "9313ecde04f7bed262716e3a4d32a5e2cea3ffad",
+                "shasum": ""
+            },
+            "require": {
+                "ext-mbstring": "*",
+                "php": "^7.1 || ^8.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "*",
+                "squizlabs/php_codesniffer": "^3.5.8",
+                "tflori/phpunit-printer": "*"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "GetOpt\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Ulrich Schmidt-Goertz",
+                    "email": "ulrich@schmidt-goertz.de"
+                },
+                {
+                    "name": "Thomas Flori",
+                    "email": "thflori@gmail.com"
+                }
+            ],
+            "description": "Command line arguments parser for PHP 7.1 and above",
+            "homepage": "http://getopt-php.github.io/getopt-php",
+            "support": {
+                "issues": "https://github.com/getopt-php/getopt-php/issues",
+                "source": "https://github.com/getopt-php/getopt-php/tree/v4.0.4"
+            },
+            "time": "2025-02-11T14:42:04+00:00"
         }
     ],
     "packages-dev": [],

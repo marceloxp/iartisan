@@ -19,7 +19,9 @@ class AskCommand extends Command
     {
         $this->setDescription('Ask IArtisan for an artisan command (used internally)')
             ->addArgument('prompt', InputArgument::REQUIRED, 'Natural language prompt')
-            ->addOption('filament', 'f', InputOption::VALUE_OPTIONAL, 'Filament version (3 or 4)', null);
+            ->addOption('filament', 'f', InputOption::VALUE_OPTIONAL, 'Filament version (3 or 4)', null)
+            ->addOption('filament3', null, InputOption::VALUE_NONE, 'Use Filament version 3')
+            ->addOption('filament4', null, InputOption::VALUE_NONE, 'Use Filament version 4');
     }
 
     private function getGeminiApiKey(): ?string
@@ -41,7 +43,12 @@ class AskCommand extends Command
     {
         $projectRoot = getcwd();
         $prompt = $input->getArgument('prompt');
-        $filamentVersion = $input->getOption('filament');
+        $filamentVersion = $input->hasOption('filament3') && $input->getOption('filament3') ? '3' : ($input->hasOption('filament4') && $input->getOption('filament4') ? '4' : $input->getOption('filament'));
+
+        if (!$prompt) {
+            $output->writeln('<error>No prompt provided. Please provide a natural language prompt.</error>');
+            return Command::FAILURE;
+        }
 
         $apiKey = $this->getGeminiApiKey();
 

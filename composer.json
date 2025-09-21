@@ -1,19 +1,21 @@
 {
     "name": "marceloxp/iartisan",
-    "description": "IArtisan — sugere comandos php artisan usando Google Gemini",
+    "description": "IArtisan — Craft Artisan commands with AI-powered ease",
     "type": "library",
     "license": "MIT",
+    "version": "0.1.0",
     "authors": [
         {
-            "name": "Marceloxp",
-            "email": "you@example.com"
+            "name": "Marcelo XP",
+            "email": "marceloxp@gmail.com"
         }
     ],
     "require": {
         "php": "^8.1",
         "symfony/console": "^6.4",
         "guzzlehttp/guzzle": "^7.5",
-        "symfony/process": "^6.4"
+        "symfony/process": "^6.4",
+        "ulrichsg/getopt-php": "^4.0"
     },
     "autoload": {
         "psr-4": {
