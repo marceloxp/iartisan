@@ -27,7 +27,7 @@ IArtisan is a command-line tool that uses the Google Gemini API to suggest `php 
 1. **Install via Composer**:
 
    ```bash
-   composer require marceloxp/iartisan
+   composer global require marceloxp/iartisan
    ```
 
 2. **Set up your Gemini API key**:
