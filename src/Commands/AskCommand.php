@@ -86,7 +86,7 @@ class AskCommand extends Command
             }
 
             $helper = $this->getHelper('question');
-            $question = new ConfirmationQuestion('Execute command? [yes] ', false, '/^(y|yes)/i');
+            $question = new ConfirmationQuestion('Execute command? [no/yes] ', false, '/^(y|yes)$/i');
 
             if ($helper->ask($input, $output, $question)) {
                 $output->writeln('<comment>Executing...</comment>');
